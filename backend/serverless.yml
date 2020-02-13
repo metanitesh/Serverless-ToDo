@@ -29,6 +29,7 @@ provider:
   environment: 
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     TODO_TABLE: TODO-${self:provider.stage}
+    INDEX_NAME: userIdIndex
     IMAGES_S3_BUCKET: serverless-todo-images-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300;
     
@@ -59,6 +60,7 @@ functions:
       - http:
           method: get
           path: todos
+          authorizer: Auth
           cors: true
           
 
@@ -69,6 +71,8 @@ functions:
       - http:
           method: post
           path: todos
+          authorizer: Auth
+          cors: true
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Creat new todo
@@ -82,6 +86,8 @@ functions:
     events:
       - http:
           method: patch
+          authorizer: Auth
+          cors: true
           path: todos/{todoId}
 
   # TODO: Configure this function
@@ -90,6 +96,8 @@ functions:
     events:
       - http:
           method: delete
+          authorizer: Auth
+          cors: true
           path: todos/{todoId}
 
   # TODO: Configure this function
@@ -98,6 +106,8 @@ functions:
     events:
       - http:
           method: post
+          authorizer: Auth
+          cors: true
           path: todos/{todoId}/attachment
 
 resources:
@@ -117,11 +127,21 @@ resources:
         AttributeDefinitions:
           - AttributeName: todoId
             AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
         KeySchema:
           - AttributeName: todoId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODO_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.INDEX_NAME}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL # What attributes will be copied to an index
+    
     # TODO: Add any necessary AWS resources
 
     AttachmentsBucket:
@@ -156,3 +176,14 @@ resources:
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
+    
+    GatewayResponseDefault4XX:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
