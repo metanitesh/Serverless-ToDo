@@ -6,8 +6,8 @@ import * as AWS  from 'aws-sdk'
 
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 const docClient = new AWS.DynamoDB.DocumentClient()
-const todoTable = process.env.TODO_TABLE;
-
+const todoTable = process.env.TODO_TABLE
+const bucketName = process.env.IMAGES_S3_BUCKET
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
@@ -19,12 +19,13 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const parsedBody = JSON.parse(event.body)
   const date = new Date();
   const dateString = date.toDateString();
-  
+
   const newItem = {
     todoId: itemId,
     done: false,
     userId: "dummy",
     createdAt: dateString,
+    imageUrl: `https://${bucketName}.s3.amazonaws.com/${itemId}`,
     ...parsedBody
   }
 
