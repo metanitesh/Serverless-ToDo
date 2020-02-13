@@ -1,16 +1,44 @@
 service:
   name: serverless-todo-app
 
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Todo API
+        description: Serverless application for Todo
+    models:
+      - name: TodoCreateRequest
+        contentType: application/json
+        schema: ${file(models/create-todo.json)}
 plugins:
   - serverless-webpack
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
   - serverless-iam-roles-per-function
 
 provider:
   name: aws
-  runtime: nodejs8.10
-
+  runtime: nodejs12.x
+  apiGateway:
+    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'us-east-1'}
+  region: ${opt:region, 'ap-south-1'}
+
+  environment: 
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    TODO_TABLE: TODO-${self:provider.stage}
+    
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
 functions:
 
@@ -24,15 +52,22 @@ functions:
       - http:
           method: get
           path: todos
+          cors: true
+          
 
   # TODO: Configure this function
-  GetTodos:
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
       - http:
           method: post
           path: todos
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Creat new todo
+            description: Create new todo
+            requestModels:
+              'application/json': TodoCreateRequest
 
   # TODO: Configure this function
   UpdateTodo:
@@ -60,4 +95,24 @@ functions:
 
 resources:
   Resources:
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+        
+    TodoDynamoDBTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: todoId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: todoId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TODO_TABLE}
     # TODO: Add any necessary AWS resources
