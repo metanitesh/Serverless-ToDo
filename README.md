@@ -8,11 +8,11 @@
 ```
 
 ### Deployed API points
- -  GET - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos
- - POST - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos
- - PATCH - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
- - DELETE - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
- - POST - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}/attachment
+ -  GET - https://r88q29each.execute-api.ap-south-1.amazonaws.com/dev/todos
+ - POST - https://r88q29each.execute-api.ap-south-1.amazonaws.com/dev/todos
+ - PATCH - https://r88q29each.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
+ - DELETE - https://r88q29each.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
+ - POST - https://r88q29each.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}/attachment
 
 These points are protected use the following JWT token to test
 ```
@@ -31,3 +31,6 @@ sls deploy -v
 
 ### Screenshot of app
 ![screeshot](https://github.com/metanitesh/Serverless-ToDo/blob/master/React-app-screeshot.png "screeshot")
+
+### Screenshot of xray tracing 
+![screeshot](https://github.com/metanitesh/Serverless-ToDo/blob/master/x-ray.png "screeshot")

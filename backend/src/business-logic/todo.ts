@@ -26,7 +26,7 @@ export async function createTodo(event: APIGatewayProxyEvent): Promise<Todo>{
     done: false,
     userId: userIdHead,
     createdAt: dateString,
-    imageUrl: `https://${bucketName}.s3.amazonaws.com/${itemId}`,
+    attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${itemId}`,
     ...parsedBody
   }
 
