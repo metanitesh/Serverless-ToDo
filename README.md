@@ -33,4 +33,4 @@ sls deploy -v
 ![screeshot](https://github.com/metanitesh/Serverless-ToDo/blob/master/React-app-screeshot.png "screeshot")
 
 ### Screenshot of xray tracing 
-![screeshot](https://github.com/metanitesh/Serverless-ToDo/blob/master/x-ray.png "screeshot")
+![screeshot](https://github.com/metanitesh/Serverless-ToDo/blob/master/xray.png "screeshot")
