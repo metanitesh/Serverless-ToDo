@@ -1,6 +1,8 @@
 import 'source-map-support/register'
 import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import * as AWSXRay from 'aws-xray-sdk'
+const XAWS = AWSXRay.captureAWS(AWS)
 
 const bucketName = process.env.IMAGES_S3_BUCKET
 let urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
@@ -8,7 +10,7 @@ let urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
 import { createLogger } from '../../utils/logger'
 const logger = createLogger('auth')
 
-const s3 = new AWS.S3({
+const s3 = new XAWS.S3({
   signatureVersion: 'v4'
 })
 

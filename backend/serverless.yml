@@ -12,6 +12,9 @@ custom:
       - name: TodoCreateRequest
         contentType: application/json
         schema: ${file(models/create-todo.json)}
+      # - name: TodoUpdateRequest
+      #   contentType: application/json
+      #   schema: ${file(models/update-todo.json)}
 plugins:
   - serverless-webpack
   - serverless-reqvalidator-plugin
@@ -19,12 +22,18 @@ plugins:
   - serverless-iam-roles-per-function
 
 provider:
+
+  
   name: aws
   runtime: nodejs12.x
   apiGateway:
     minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'ap-south-1'}
+
+  tracing:
+    lambda: true
+    apiGateway: true
 
   environment: 
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
@@ -33,26 +42,38 @@ provider:
     IMAGES_S3_BUCKET: serverless-todo-images-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300;
     
-    
+    # "Sid": "AllowXRay",
+    # "Resource": "*",
+    # "Action": [
+    #     "xray:PutTraceSegments",
+    #     "xray:PutTelemetryRecords"
+    # ],
+    # "Effect": "Allow"
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - dynamodb:Scan
-        - dynamodb:PutItem
-        - dynamodb:GetItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-        - dynamodb:Query
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-        - s3:GetObject
-      Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+        - xray:PutTraceSegments
+        - xray:PutTelemetryRecords
+      Resource:
+        - '*'
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:Scan
+  #       - dynamodb:PutItem
+  #       - dynamodb:GetItem
+  #       - dynamodb:UpdateItem
+  #       - dynamodb:DeleteItem
+  #       - dynamodb:Query
+  #     Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:Query
+  #     Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
+    # - Effect: Allow
+    #   Action:
+    #     - s3:PutObject
+    #     - s3:GetObject
+    #   Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
 functions:
 
   Auth:
@@ -61,33 +82,71 @@ functions:
   # TODO: Configure this function
   GetTodos:
     handler: src/lambda/http/getTodos.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource: "*"
+      
     events:
       - http:
           method: get
           path: todos
           authorizer: Auth
           cors: true
+
           
 
   # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords  
+        Resource: "*"
+
     events:
       - http:
           method: post
           path: todos
           authorizer: Auth
           cors: true
-          # reqValidatorName: RequestBodyValidator
-          # documentation:
-          #   summary: Creat new todo
-          #   description: Create new todo
-          #   requestModels:
-          #     'application/json': TodoCreateRequest
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Creat new todo
+            description: Create new todo
+            requestModels:
+              'application/json': TodoCreateRequest
 
   # TODO: Configure this function
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource: "*"
+
     events:
       - http:
           method: patch
@@ -98,6 +157,16 @@ functions:
   # TODO: Configure this function
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource: "*"
     events:
       - http:
           method: delete
@@ -108,6 +177,17 @@ functions:
   # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource: "*"
     events:
       - http:
           method: post
@@ -117,14 +197,14 @@ functions:
 
 resources:
   Resources:
-    # RequestBodyValidator:
-    #   Type: AWS::ApiGateway::RequestValidator
-    #   Properties:
-    #     Name: 'request-body-validator'
-    #     RestApiId:
-    #       Ref: ApiGatewayRestApi
-    #     ValidateRequestBody: true
-    #     ValidateRequestParameters: false
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
         
     TodoDynamoDBTable:
       Type: "AWS::DynamoDB::Table"
