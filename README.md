@@ -30,6 +30,4 @@ sls deploy -v
 ```
 
 ### Screenshot of app
-[
-Inline-style: 
-![screeshot](https://github.com/metanitesh/Microservice-Project/blob/master/React-app-screeshot.png "screeshot")
+![screeshot](https://github.com/metanitesh/Serverless-ToDo/blob/master/React-app-screeshot.png "screeshot")
