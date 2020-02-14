@@ -8,11 +8,11 @@
 ```
 
 ### Deployed API points
- -  GET - https://boe8gta9nd.execute-api.ap-south-1.amazonaws.com/dev/todos
- - POST - https://boe8gta9nd.execute-api.ap-south-1.amazonaws.com/dev/todos
- - PATCH - https://boe8gta9nd.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
- - DELETE - https://boe8gta9nd.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
- - POST - https://boe8gta9nd.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}/attachment
+ -  GET - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos
+ - POST - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos
+ - PATCH - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
+ - DELETE - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}
+ - POST - https://qm1tvn9dul.execute-api.ap-south-1.amazonaws.com/dev/todos/{todoId}/attachment
 
 These points are protected use the following JWT token to test
 ```
