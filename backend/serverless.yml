@@ -42,7 +42,12 @@ provider:
         - dynamodb:GetItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
+        - dynamodb:Query
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
     - Effect: Allow
       Action:
         - s3:PutObject
@@ -73,12 +78,12 @@ functions:
           path: todos
           authorizer: Auth
           cors: true
-          reqValidatorName: RequestBodyValidator
-          documentation:
-            summary: Creat new todo
-            description: Create new todo
-            requestModels:
-              'application/json': TodoCreateRequest
+          # reqValidatorName: RequestBodyValidator
+          # documentation:
+          #   summary: Creat new todo
+          #   description: Create new todo
+          #   requestModels:
+          #     'application/json': TodoCreateRequest
 
   # TODO: Configure this function
   UpdateTodo:
@@ -112,14 +117,14 @@ functions:
 
 resources:
   Resources:
-    RequestBodyValidator:
-      Type: AWS::ApiGateway::RequestValidator
-      Properties:
-        Name: 'request-body-validator'
-        RestApiId:
-          Ref: ApiGatewayRestApi
-        ValidateRequestBody: true
-        ValidateRequestParameters: false
+    # RequestBodyValidator:
+    #   Type: AWS::ApiGateway::RequestValidator
+    #   Properties:
+    #     Name: 'request-body-validator'
+    #     RestApiId:
+    #       Ref: ApiGatewayRestApi
+    #     ValidateRequestBody: true
+    #     ValidateRequestParameters: false
         
     TodoDynamoDBTable:
       Type: "AWS::DynamoDB::Table"
@@ -134,13 +139,15 @@ resources:
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODO_TABLE}
-        LocalSecondaryIndexes:
+        GlobalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
+              
+        
     
     # TODO: Add any necessary AWS resources
 

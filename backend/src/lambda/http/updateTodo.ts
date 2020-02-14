@@ -3,13 +3,15 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import * as AWS  from 'aws-sdk'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+import { createLogger } from '../../utils/logger'
+const logger = createLogger('auth')
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const todoTable = process.env.TODO_TABLE;
 
-
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
+  logger.info("updating the todo for todoId", todoId);
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
 
   const params = {
@@ -30,15 +32,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   await docClient.update(params).promise();
 
-  // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
   return {
     statusCode: 201,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
     },
-    body: JSON.stringify({
-      todoId,
-      updatedTodo
-    })
+    body: ""
   }
 }

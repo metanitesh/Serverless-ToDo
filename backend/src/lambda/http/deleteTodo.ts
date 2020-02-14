@@ -4,13 +4,14 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 import * as AWS  from 'aws-sdk'
 const docClient = new AWS.DynamoDB.DocumentClient()
 const todoTable = process.env.TODO_TABLE;
+import { createLogger } from '../../utils/logger'
+const logger = createLogger('auth')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
+  console.log("---------------------------------", todoId)
+  logger.info('Deleting to do for the todoId :', todoId);
   
-  console.log(todoId)
-  // TODO: Remove a TODO item by id
-
   var params = {
     TableName:todoTable,
     Key: {
@@ -23,10 +24,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   return {
     statusCode: 201,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
     },
-    body: JSON.stringify({
-      todoId
-    })
+    body: ""
   }
 }

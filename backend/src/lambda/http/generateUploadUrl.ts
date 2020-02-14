@@ -5,20 +5,23 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 const bucketName = process.env.IMAGES_S3_BUCKET
 let urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
 
+import { createLogger } from '../../utils/logger'
+const logger = createLogger('auth')
+
 const s3 = new AWS.S3({
   signatureVersion: 'v4'
 })
 
-
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
-  console.log(todoId)
+  logger.info('Getting presigned URL for todoId:', todoId);
+
   const url = getUploadUrl(todoId);
-  // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
   return {
     statusCode: 201,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
       uploadUrl: url

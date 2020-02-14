@@ -10,17 +10,19 @@ const docClient = new AWS.DynamoDB.DocumentClient()
 const todoTable = process.env.TODO_TABLE
 const bucketName = process.env.IMAGES_S3_BUCKET
 
+import { createLogger } from '../../utils/logger'
+const logger = createLogger('auth')
+
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const newTodo: CreateTodoRequest = JSON.parse(event.body)
+  
+  const parsedBody: CreateTodoRequest = JSON.parse(event.body)
   const userIdHead = getUserId(event);
-  console.log(newTodo)
-  console.log("*********************************************", userIdHead)
+  logger.info('Adding to do for the userId :', userIdHead);
+
 
   const itemId = uuid.v4()
-
-  const parsedBody = JSON.parse(event.body)
   const date = new Date();
-  const dateString = date.toDateString();
+  const dateString = date.toISOString();
 
   const newItem = {
     todoId: itemId,
@@ -39,10 +41,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   return {
     statusCode: 201,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      newItem
+      item: newItem
     })
   }
 }
